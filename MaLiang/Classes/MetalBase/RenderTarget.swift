@@ -103,17 +103,60 @@ open class RenderTarget {
     }
     
     // make empty testure
+//    internal func makeEmptyTexture() -> MTLTexture? {
+//        guard drawableSize.width * drawableSize.height > 0 else {
+//            return nil
+//        }
+//        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat,
+//                                                                         width: Int(drawableSize.width),
+//                                                                         height: Int(drawableSize.height),
+//                                                                         mipmapped: false)
+//        textureDescriptor.usage = [.renderTarget, .shaderRead]
+//        let texture = device?.makeTexture(descriptor: textureDescriptor)
+//        texture?.clear()
+//        return texture
+//    }
+    
     internal func makeEmptyTexture() -> MTLTexture? {
-        guard drawableSize.width * drawableSize.height > 0 else {
+        // Kiểm tra device
+        guard let device = device else {
+            print("Lỗi: Metal device không khả dụng")
             return nil
         }
-        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat,
-                                                                         width: Int(drawableSize.width),
-                                                                         height: Int(drawableSize.height),
-                                                                         mipmapped: false)
+        
+        // Kiểm tra kích thước hợp lệ
+        let width = Int(drawableSize.width)
+        let height = Int(drawableSize.height)
+        guard width > 0, height > 0 else {
+            print("Lỗi: Kích thước không hợp lệ - width: \(width), height: \(height)")
+            return nil
+        }
+        
+        // Kiểm tra giới hạn thiết bị (tuỳ chọn)
+        let maxSize = GL_MAX_TEXTURE_SIZE // Giới hạn tối đa của nhiều thiết bị Metal
+        guard width <= maxSize, height <= maxSize else {
+            print("Lỗi: Kích thước vượt quá giới hạn - width: \(width), height: \(height)")
+            return nil
+        }
+        
+        // Tạo descriptor
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: pixelFormat,
+            width: width,
+            height: height,
+            mipmapped: false
+        )
         textureDescriptor.usage = [.renderTarget, .shaderRead]
-        let texture = device?.makeTexture(descriptor: textureDescriptor)
-        texture?.clear()
+        
+        // Tạo texture
+        guard let texture = device.makeTexture(descriptor: textureDescriptor) else {
+            print("Lỗi: Không thể tạo texture với descriptor - pixelFormat: \(pixelFormat)")
+            return nil
+        }
+        
+        // Xóa texture (nếu cần)
+        texture.clear() // Đảm bảo hàm clear() không gây lỗi
+        
         return texture
     }
     
