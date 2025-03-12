@@ -219,9 +219,20 @@ open class Canvas: MetalView {
         data.observers.data(oldData, didResetTo: newData)
     }
     
+//    public func undo() {
+//        if let data = data, data.undo() {
+//            redraw()
+//        }
+//    }
     public func undo() {
         if let data = data, data.undo() {
+            guard !data.elements.isEmpty else {
+                debugPrint("Lỗi: Không còn phần tử nào để vẽ lại sau undo")
+                return
+            }
             redraw()
+        } else {
+            debugPrint("Lỗi: Không thể undo hoặc data là nil")
         }
     }
     
@@ -233,22 +244,35 @@ open class Canvas: MetalView {
     
     /// redraw elemets in document
     /// - Attention: thie method must be called on main thread
+//    open func redraw(on target: RenderTarget? = nil) {
+//        
+//        guard let target = target ?? screenTarget else {
+//            return
+//        }
+//        
+//        data.finishCurrentElement()
+//        
+//        target.updateBuffer(with: drawableSize)
+//        target.clear()
+//        
+//        data.elements.forEach { $0.drawSelf(on: target) }
+//        
+//        /// submit commands
+//        target.commitCommands()
+//        
+//        actionObservers.canvas(self, didRedrawOn: target)
+//    }
     open func redraw(on target: RenderTarget? = nil) {
-        
-        guard let target = target ?? screenTarget else {
+        guard let target = target ?? screenTarget else { return }
+        guard drawableSize.width > 0 && drawableSize.height > 0 else {
+            debugPrint("error: drawableSize invalid - \(drawableSize)")
             return
         }
-        
         data.finishCurrentElement()
-        
         target.updateBuffer(with: drawableSize)
         target.clear()
-        
         data.elements.forEach { $0.drawSelf(on: target) }
-        
-        /// submit commands
         target.commitCommands()
-        
         actionObservers.canvas(self, didRedrawOn: target)
     }
     
