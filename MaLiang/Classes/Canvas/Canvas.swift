@@ -219,22 +219,22 @@ open class Canvas: MetalView {
         data.observers.data(oldData, didResetTo: newData)
     }
     
-//    public func undo() {
-//        if let data = data, data.undo() {
-//            redraw()
-//        }
-//    }
     public func undo() {
         if let data = data, data.undo() {
-            guard !data.elements.isEmpty else {
-                debugPrint("Lỗi: Không còn phần tử nào để vẽ lại sau undo")
-                return
-            }
             redraw()
-        } else {
-            debugPrint("Lỗi: Không thể undo hoặc data là nil")
         }
     }
+//    public func undo() {
+//        if let data = data, data.undo() {
+//            guard !data.elements.isEmpty else {
+//                debugPrint("Lỗi: Không còn phần tử nào để vẽ lại sau undo")
+//                return
+//            }
+//            redraw()
+//        } else {
+//            debugPrint("Lỗi: Không thể undo hoặc data là nil")
+//        }
+//    }
     
     public func redo() {
         if let data = data, data.redo() {
