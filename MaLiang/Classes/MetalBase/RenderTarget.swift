@@ -117,6 +117,23 @@ open class RenderTarget {
 //        return texture
 //    }
     
+    func getMaxTextureSize(device: MTLDevice) -> Int {
+        if #available(iOS 13.0, *) {
+            if device.supportsFamily(.apple7) || device.supportsFamily(.apple6) ||
+                device.supportsFamily(.apple5) || device.supportsFamily(.apple4) ||
+                device.supportsFamily(.apple3) {
+                return 16384 // A12 trở lên (iOS), hoặc M1/M2 (macOS)
+            } else if device.supportsFamily(.apple2) || device.supportsFamily(.apple1) {
+                return 8192  // A9 - A11
+            } else {
+                return 4096  // Thiết bị cũ hơn (A7, A8)
+            }
+        } else {
+            // Fallback on earlier versions
+            return 4096
+        }
+    }
+    
     internal func makeEmptyTexture() -> MTLTexture? {
         // Kiểm tra device
         guard let device = device else {
@@ -132,9 +149,9 @@ open class RenderTarget {
             return nil
         }
         
-        // Kiểm tra giới hạn thiết bị (tuỳ chọn)
-        let maxSize = GL_MAX_TEXTURE_SIZE // Giới hạn tối đa của nhiều thiết bị Metal
-        guard width <= maxSize, height <= maxSize else {
+        // Kiểm tra giới hạn thiết bị (tuỳ chọn)     
+        let maxTextureSize = getMaxTextureSize(device: device)
+        guard width <= maxTextureSize, height <= maxTextureSize else {
             print("Lỗi: Kích thước vượt quá giới hạn - width: \(width), height: \(height)")
             return nil
         }
